@@ -26,7 +26,7 @@
     "test:watch": "cross-env NODE_ENV=test jest --watch --runInBand",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "format": "prettier --write src"
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@prisma/client": "5.22.0",

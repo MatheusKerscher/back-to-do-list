@@ -24,9 +24,7 @@ describe('PATCH /to-do/:id/check', () => {
       const todo_id = create_res.body.todo.id
       expect(create_res.body.todo.done).toBe(false)
 
-      const res = await request(app)
-        .patch(`/to-do/${todo_id}/check`)
-        .set('Cookie', cookie)
+      const res = await request(app).patch(`/to-do/${todo_id}/check`).set('Cookie', cookie)
 
       expect(res.status).toBe(200)
       expect(res.body.todo.done).toBe(true)
@@ -44,9 +42,7 @@ describe('PATCH /to-do/:id/check', () => {
 
       await request(app).patch(`/to-do/${todo_id}/check`).set('Cookie', cookie)
 
-      const res = await request(app)
-        .patch(`/to-do/${todo_id}/check`)
-        .set('Cookie', cookie)
+      const res = await request(app).patch(`/to-do/${todo_id}/check`).set('Cookie', cookie)
 
       expect(res.status).toBe(200)
       expect(res.body.todo.done).toBe(false)
@@ -55,9 +51,7 @@ describe('PATCH /to-do/:id/check', () => {
     it('returns 404 when todo does not exist', async () => {
       const cookie = await create_authenticated_user(app)
 
-      const res = await request(app)
-        .patch('/to-do/non-existent-id/check')
-        .set('Cookie', cookie)
+      const res = await request(app).patch('/to-do/non-existent-id/check').set('Cookie', cookie)
 
       expect(res.status).toBe(404)
       expect(res.body.name).toBe('NotFoundError')

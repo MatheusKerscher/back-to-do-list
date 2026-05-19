@@ -1,4 +1,3 @@
-
 <p align="center"> <img src="https://coopers.digital/assets/img/coopers-brand.png" alt="Marca da Coopers" /> </p> <p align="center"> <em>Fast, flexible, trustful.</em> </p>
 
 # Avaliação Full Stack Developer
@@ -34,9 +33,9 @@ Além da correta reprodução do design, avaliaremos o código CSS em termos de 
 
 ### Aplicação e Funcionalidades
 
--   Implementação funcional dos CRUDs para uma to-do list.
--   Tornar a lista operacional com funcionalidades de drag-and-drop, exclusão, adição, etc.
--   Implementar um sistema de login/senha para acessar a página (acesso com credenciais).
+- Implementação funcional dos CRUDs para uma to-do list.
+- Tornar a lista operacional com funcionalidades de drag-and-drop, exclusão, adição, etc.
+- Implementar um sistema de login/senha para acessar a página (acesso com credenciais).
 
 ### Performance
 
