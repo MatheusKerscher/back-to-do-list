@@ -24,8 +24,8 @@
     "db:studio": "prisma studio",
     "test": "node scripts/test.js",
     "test:watch": "cross-env NODE_ENV=test jest --watch --runInBand",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write ."
   },
   "dependencies": {
