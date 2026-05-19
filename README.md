@@ -87,6 +87,12 @@ Starts Docker, applies migrations to an isolated test database, then runs the fu
 | ------ | ---------- | ---- | ------------------------------------- |
 | `POST` | `/contact` | —    | Send a contact form message via email |
 
+### Documentation
+
+| Method | Route   | Auth | Description                        |
+| ------ | ------- | ---- | ---------------------------------- |
+| `GET`  | `/docs` | —    | Interactive API reference (Scalar) |
+
 ### Error responses
 
 All errors follow a consistent shape:
