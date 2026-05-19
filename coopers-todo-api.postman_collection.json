@@ -1,0 +1,146 @@
+{
+  "info": {
+    "name": "Coopers To-Do List API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3333",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "header": []
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "header": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "To-Do",
+      "item": [
+        {
+          "name": "List todos",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/to-do",
+            "header": []
+          }
+        },
+        {
+          "name": "Create todo",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/to-do",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Buy groceries\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update todo",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/to-do/:id",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/to-do/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["to-do", ":id"],
+              "variable": [{ "key": "id", "value": "PASTE_TODO_ID_HERE" }]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Buy groceries and cook dinner\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Check / Uncheck todo",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/to-do/:id/check",
+              "host": ["{{baseUrl}}"],
+              "path": ["to-do", ":id", "check"],
+              "variable": [{ "key": "id", "value": "PASTE_TODO_ID_HERE" }]
+            },
+            "header": []
+          }
+        },
+        {
+          "name": "Delete todo",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/to-do/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["to-do", ":id"],
+              "variable": [{ "key": "id", "value": "PASTE_TODO_ID_HERE" }]
+            },
+            "header": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "item": [
+        {
+          "name": "Send message",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/contact",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"message\": \"Hello! I would like to get in touch with your team.\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
