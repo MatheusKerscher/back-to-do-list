@@ -28,7 +28,7 @@ REST API built for the Coopers Full Stack Developer technical challenge. Handles
 npm install
 
 # 2. Set up environment variables
-cp .env.example .env.development
+cp .env.development
 # Fill in all values in .env.development
 
 # 3. Start — spins up Docker, runs migrations, starts the server
