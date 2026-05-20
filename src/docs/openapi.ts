@@ -85,7 +85,13 @@ export const openapi_spec = {
                 properties: {
                   name: { type: 'string', minLength: 2, example: 'John Doe' },
                   email: { type: 'string', format: 'email', example: 'john@example.com' },
-                  password: { type: 'string', minLength: 6, example: 'password123' },
+                  password: {
+                    type: 'string',
+                    minLength: 8,
+                    description:
+                      'Min 8 chars, requires uppercase, lowercase, number, and special character.',
+                    example: 'Password@123',
+                  },
                 },
               },
             },
@@ -135,7 +141,7 @@ export const openapi_spec = {
                 required: ['email', 'password'],
                 properties: {
                   email: { type: 'string', format: 'email', example: 'john@example.com' },
-                  password: { type: 'string', minLength: 6, example: 'password123' },
+                  password: { type: 'string', minLength: 1, example: 'Password@123' },
                 },
               },
             },

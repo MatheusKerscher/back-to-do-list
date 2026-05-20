@@ -53,11 +53,11 @@ describe('DELETE /to-do/:id', () => {
       await request(app).post('/auth/register').send({
         name: 'Other User',
         email: 'other@test.com',
-        password: 'password123',
+        password: 'Password@123',
       })
       const other_login = await request(app)
         .post('/auth/login')
-        .send({ email: 'other@test.com', password: 'password123' })
+        .send({ email: 'other@test.com', password: 'Password@123' })
       const other_cookie = other_login.headers['set-cookie'] as unknown as string[]
 
       const res = await request(app).delete(`/to-do/${todo_id}`).set('Cookie', other_cookie)

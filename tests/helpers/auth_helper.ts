@@ -4,7 +4,7 @@ import type { Application } from 'express'
 export const TEST_USER = {
   name: 'Test User',
   email: 'user@test.com',
-  password: 'password123',
+  password: 'Password@123',
 }
 
 export async function create_authenticated_user(app: Application): Promise<string[]> {

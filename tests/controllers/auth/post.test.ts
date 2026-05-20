@@ -7,7 +7,7 @@ describe('POST /auth/register', () => {
       const res = await request(app).post('/auth/register').send({
         name: 'John Doe',
         email: 'john@example.com',
-        password: 'password123',
+        password: 'Password@123',
       })
 
       expect(res.status).toBe(201)
@@ -20,7 +20,7 @@ describe('POST /auth/register', () => {
       const res = await request(app).post('/auth/register').send({
         name: 'J',
         email: 'john@example.com',
-        password: 'password123',
+        password: 'Password@123',
       })
 
       expect(res.status).toBe(400)
@@ -32,7 +32,7 @@ describe('POST /auth/register', () => {
       const res = await request(app).post('/auth/register').send({
         name: 'John Doe',
         email: 'not-an-email',
-        password: 'password123',
+        password: 'Password@123',
       })
 
       expect(res.status).toBe(400)
@@ -44,7 +44,55 @@ describe('POST /auth/register', () => {
       const res = await request(app).post('/auth/register').send({
         name: 'John Doe',
         email: 'john@example.com',
-        password: '123',
+        password: 'Ab@1',
+      })
+
+      expect(res.status).toBe(400)
+      expect(res.body.name).toBe('ValidationError')
+      expect(res.body.fields.password).toBeDefined()
+    })
+
+    it('returns 400 when password has no lowercase letter', async () => {
+      const res = await request(app).post('/auth/register').send({
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'PASSWORD@123',
+      })
+
+      expect(res.status).toBe(400)
+      expect(res.body.name).toBe('ValidationError')
+      expect(res.body.fields.password).toBeDefined()
+    })
+
+    it('returns 400 when password has no uppercase letter', async () => {
+      const res = await request(app).post('/auth/register').send({
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'password@123',
+      })
+
+      expect(res.status).toBe(400)
+      expect(res.body.name).toBe('ValidationError')
+      expect(res.body.fields.password).toBeDefined()
+    })
+
+    it('returns 400 when password has no number', async () => {
+      const res = await request(app).post('/auth/register').send({
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'Password@abc',
+      })
+
+      expect(res.status).toBe(400)
+      expect(res.body.name).toBe('ValidationError')
+      expect(res.body.fields.password).toBeDefined()
+    })
+
+    it('returns 400 when password has no special character', async () => {
+      const res = await request(app).post('/auth/register').send({
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'Password123',
       })
 
       expect(res.status).toBe(400)
@@ -56,13 +104,13 @@ describe('POST /auth/register', () => {
       await request(app).post('/auth/register').send({
         name: 'John Doe',
         email: 'john@example.com',
-        password: 'password123',
+        password: 'Password@123',
       })
 
       const res = await request(app).post('/auth/register').send({
         name: 'Another User',
         email: 'john@example.com',
-        password: 'password456',
+        password: 'Password@456',
       })
 
       expect(res.status).toBe(409)
@@ -76,7 +124,7 @@ describe('POST /auth/login', () => {
     await request(app).post('/auth/register').send({
       name: 'John Doe',
       email: 'john@example.com',
-      password: 'password123',
+      password: 'Password@123',
     })
   })
 
@@ -84,7 +132,7 @@ describe('POST /auth/login', () => {
     it('returns 200 and sets cookie with valid credentials', async () => {
       const res = await request(app)
         .post('/auth/login')
-        .send({ email: 'john@example.com', password: 'password123' })
+        .send({ email: 'john@example.com', password: 'Password@123' })
 
       expect(res.status).toBe(200)
       expect(res.body.user).toMatchObject({ email: 'john@example.com' })
@@ -103,7 +151,7 @@ describe('POST /auth/login', () => {
     it('returns 401 with non-existent email', async () => {
       const res = await request(app)
         .post('/auth/login')
-        .send({ email: 'nobody@example.com', password: 'password123' })
+        .send({ email: 'nobody@example.com', password: 'Password@123' })
 
       expect(res.status).toBe(401)
       expect(res.body.name).toBe('UnauthorizedError')
@@ -112,7 +160,7 @@ describe('POST /auth/login', () => {
     it('returns 400 when email is invalid', async () => {
       const res = await request(app)
         .post('/auth/login')
-        .send({ email: 'not-an-email', password: 'password123' })
+        .send({ email: 'not-an-email', password: 'Password@123' })
 
       expect(res.status).toBe(400)
       expect(res.body.name).toBe('ValidationError')
