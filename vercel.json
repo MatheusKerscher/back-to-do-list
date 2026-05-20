@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "prisma migrate deploy && tsc",
   "builds": [{ "src": "src/api.ts", "use": "@vercel/node" }],
   "routes": [{ "src": "/(.*)", "dest": "/src/api.ts" }]
 }

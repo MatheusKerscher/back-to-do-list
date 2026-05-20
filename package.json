@@ -14,7 +14,7 @@
   "scripts": {
     "dev": "node scripts/dev.js",
     "build": "tsc",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && node -e \"if(process.env.VERCEL){const{execSync}=require('child_process');execSync('prisma migrate deploy',{stdio:'inherit'})}\"",
     "start": "node dist/server.js",
     "services:up": "docker compose up -d --remove-orphans",
     "services:stop": "docker compose stop",
