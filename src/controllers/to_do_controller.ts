@@ -5,6 +5,8 @@ import { prisma } from '../lib/prisma'
 import { NotFoundError } from '../errors'
 import { parse_or_throw } from '../utils/validate'
 
+const TODO_SELECT = { id: true, text: true, done: true, order: true } as const
+
 const todo_schema = z.object({
   text: z.string().trim().min(1, 'Text is required.'),
 })
@@ -21,6 +23,7 @@ export async function list_todos(req: Request, res: Response): Promise<void> {
   const todos = await prisma.todo.findMany({
     where: { user_id: req.user_id },
     orderBy: [{ done: 'asc' }, { order: 'asc' }, { created_at: 'asc' }],
+    select: TODO_SELECT,
   })
 
   res.json({ todos })
@@ -41,6 +44,7 @@ export async function create_todo(req: Request, res: Response): Promise<void> {
       user_id: req.user_id as string,
       order: (last_todo?.order ?? -1) + 1,
     },
+    select: TODO_SELECT,
   })
 
   res.status(201).json({ todo })
@@ -54,6 +58,7 @@ export async function update_todo(req: Request, res: Response): Promise<void> {
   const updated = await prisma.todo.update({
     where: { id },
     data: { text },
+    select: TODO_SELECT,
   })
 
   res.json({ todo: updated })
@@ -66,6 +71,7 @@ export async function check_todo(req: Request, res: Response): Promise<void> {
   const updated = await prisma.todo.update({
     where: { id },
     data: { done: !todo.done },
+    select: TODO_SELECT,
   })
 
   res.json({ todo: updated })
