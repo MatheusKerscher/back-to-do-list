@@ -20,7 +20,7 @@
     "services:stop": "docker compose stop",
     "services:down": "docker compose down",
     "services:wait:database": "node scripts/wait-for-postgres.js",
-    "db:migrate": "prisma migrate dev",
+    "db:migrate": "node scripts/migrate.js",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "test": "node scripts/test.js",
