@@ -1,14 +1,26 @@
 {
   "name": "back-to-do-list",
   "version": "1.0.0",
-  "description": "API to Coopers technical challenge ",
+  "description": "API to Coopers technical challenge",
   "keywords": [
-    "API",
-    "Node",
-    "Axios"
+    "REST API",
+    "TypeScript",
+    "Express",
+    "Prisma",
+    "PostgreSQL",
+    "JWT",
+    "To-do"
   ],
   "license": "MIT",
-  "author": "",
+  "author": "Matheus Kerscher <kerschermatheus12@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MatheusKerscher/back-to-do-list.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MatheusKerscher/back-to-do-list/issues"
+  },
+  "homepage": "https://github.com/MatheusKerscher/back-to-do-list#readme",
   "type": "commonjs",
   "main": "dist/server.js",
   "scripts": {
