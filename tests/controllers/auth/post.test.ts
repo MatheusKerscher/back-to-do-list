@@ -1,4 +1,5 @@
 import request from 'supertest'
+import setCookieParser from 'set-cookie-parser'
 import { app } from '../../../src/app'
 
 describe('POST /auth/register', () => {
@@ -11,9 +12,15 @@ describe('POST /auth/register', () => {
       })
 
       expect(res.status).toBe(201)
-      expect(res.body.user).toMatchObject({ name: 'John Doe', email: 'john@example.com' })
+      expect(res.body.user).toMatchObject({ name: 'John Doe' })
+      expect(res.body.user).not.toHaveProperty('email')
       expect(res.body.user).not.toHaveProperty('password_hash')
-      expect(res.headers['set-cookie']).toBeDefined()
+      const parsedSetCookie = setCookieParser(res, { map: true })
+      expect(parsedSetCookie.token.name).toBe('token')
+      expect(parsedSetCookie.token.httpOnly).toBe(true)
+      expect(parsedSetCookie.token.path).toBe('/')
+      expect(parsedSetCookie.token.maxAge).toBe(3600)
+      expect(parsedSetCookie.token.sameSite).toBe('Lax')
     })
 
     it('returns 400 when name is too short', async () => {
@@ -136,7 +143,12 @@ describe('POST /auth/login', () => {
 
       expect(res.status).toBe(200)
       expect(res.body.user).toMatchObject({ email: 'john@example.com' })
-      expect(res.headers['set-cookie']).toBeDefined()
+      const parsedSetCookie = setCookieParser(res, { map: true })
+      expect(parsedSetCookie.token.name).toBe('token')
+      expect(parsedSetCookie.token.httpOnly).toBe(true)
+      expect(parsedSetCookie.token.path).toBe('/')
+      expect(parsedSetCookie.token.maxAge).toBe(3600)
+      expect(parsedSetCookie.token.sameSite).toBe('Lax')
     })
 
     it('returns 401 with wrong password', async () => {
