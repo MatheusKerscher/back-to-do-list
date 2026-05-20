@@ -12,5 +12,8 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.test.json' }],
   },
+  moduleNameMapper: {
+    '@scalar/express-api-reference': '<rootDir>/tests/__mocks__/scalar.js',
+  },
   testTimeout: 10000,
 }

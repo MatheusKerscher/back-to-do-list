@@ -11,6 +11,7 @@ describe('POST /contact', () => {
       const res = await request(app).post('/contact').send({
         name: 'Jane Doe',
         email: 'kerschermatheus12@gmail.com',
+        phone: '(11) 91234-5678',
         message: 'Hello, this is a test message with enough characters.',
       })
 
@@ -22,6 +23,7 @@ describe('POST /contact', () => {
       const res = await request(app).post('/contact').send({
         name: 'J',
         email: 'kerschermatheus12@gmail.com',
+        phone: '(11) 91234-5678',
         message: 'Hello, this is a test message.',
       })
 
@@ -34,6 +36,7 @@ describe('POST /contact', () => {
       const res = await request(app).post('/contact').send({
         name: 'Jane Doe',
         email: 'not-an-email',
+        phone: '(11) 91234-5678',
         message: 'Hello, this is a test message.',
       })
 
@@ -42,10 +45,24 @@ describe('POST /contact', () => {
       expect(res.body.fields.email).toBeDefined()
     })
 
+    it('returns 400 when phone is too short', async () => {
+      const res = await request(app).post('/contact').send({
+        name: 'Jane Doe',
+        email: 'kerschermatheus12@gmail.com',
+        phone: '1234',
+        message: 'Hello, this is a test message.',
+      })
+
+      expect(res.status).toBe(400)
+      expect(res.body.name).toBe('ValidationError')
+      expect(res.body.fields.phone).toBeDefined()
+    })
+
     it('returns 400 when message is too short', async () => {
       const res = await request(app).post('/contact').send({
         name: 'Jane Doe',
         email: 'kerschermatheus12@gmail.com',
+        phone: '(11) 91234-5678',
         message: 'Short',
       })
 
