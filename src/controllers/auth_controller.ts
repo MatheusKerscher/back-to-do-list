@@ -9,12 +9,13 @@ import { parse_or_throw } from '../utils/validate'
 
 const PEPPER = process.env.PASSWORD_PEPPER ?? ''
 const JWT_SECRET = process.env.JWT_SECRET!
-const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000
+const COOKIE_MAX_AGE = 60 * 60 * 1000
 
 const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
   maxAge: COOKIE_MAX_AGE,
 }
 
@@ -52,13 +53,13 @@ export async function register(req: Request, res: Response): Promise<void> {
 
   const user = await prisma.user.create({
     data: { name, email, password_hash: hashed_password },
-    select: { id: true, name: true, email: true, created_at: true },
+    select: { id: true, name: true },
   })
 
-  const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '7d' })
+  const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '1h' })
   set_auth_cookie(res, token)
 
-  res.status(201).json({ user })
+  res.status(201).json({ user: { id: user.id, name: user.name } })
 }
 
 export async function login(req: Request, res: Response): Promise<void> {
@@ -70,7 +71,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     throw new UnauthorizedError('Invalid credentials.', 'Check your email and password.')
   }
 
-  const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '7d' })
+  const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '1h' })
   set_auth_cookie(res, token)
 
   res.json({ user: { id: user.id, name: user.name, email: user.email } })
@@ -87,5 +88,5 @@ export async function me(req: Request, res: Response): Promise<void> {
     select: { id: true, name: true, email: true, created_at: true },
   })
 
-  res.json({ user })
+  res.json({ user: { id: user!.id, name: user!.name, email: user!.email, created_at: user!.created_at } })
 }
