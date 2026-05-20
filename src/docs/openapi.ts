@@ -17,7 +17,7 @@ export const openapi_spec = {
         type: 'apiKey',
         in: 'cookie',
         name: 'token',
-        description: 'JWT token set automatically after a successful login',
+        description: 'JWT token set automatically after a successful login or register. Expires in 1 hour.',
       },
     },
     schemas: {
@@ -37,9 +37,21 @@ export const openapi_spec = {
           text: { type: 'string', example: 'Buy groceries' },
           done: { type: 'boolean', example: false },
           order: { type: 'integer', example: 0 },
-          user_id: { type: 'string', format: 'uuid' },
-          created_at: { type: 'string', format: 'date-time' },
-          updated_at: { type: 'string', format: 'date-time' },
+        },
+      },
+      UserRegister: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: { type: 'string', example: 'John Doe' },
+        },
+      },
+      UserLogin: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: { type: 'string', example: 'John Doe' },
+          email: { type: 'string', format: 'email', example: 'john@example.com' },
         },
       },
       ErrorResponse: {
@@ -99,12 +111,12 @@ export const openapi_spec = {
         },
         responses: {
           201: {
-            description: 'User created successfully',
+            description: 'User created successfully — sets httpOnly cookie `token` (expires in 1h)',
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
-                  properties: { user: { $ref: '#/components/schemas/User' } },
+                  properties: { user: { $ref: '#/components/schemas/UserRegister' } },
                 },
               },
             },
@@ -149,12 +161,12 @@ export const openapi_spec = {
         },
         responses: {
           200: {
-            description: 'Login successful — sets httpOnly cookie `token`',
+            description: 'Login successful — sets httpOnly cookie `token` (expires in 1h)',
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
-                  properties: { user: { $ref: '#/components/schemas/User' } },
+                  properties: { user: { $ref: '#/components/schemas/UserLogin' } },
                 },
               },
             },

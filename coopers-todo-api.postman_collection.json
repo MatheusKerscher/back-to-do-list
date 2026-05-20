@@ -29,7 +29,28 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}"
             }
-          }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Set-Cookie", "value": "token=<jwt>; Path=/; Max-Age=3600; HttpOnly; SameSite=None; Secure" }
+              ],
+              "body": "{\n  \"user\": {\n    \"id\": \"uuid\",\n    \"name\": \"John Doe\"\n  }\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/auth/register",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}"
+                }
+              }
+            }
+          ]
         },
         {
           "name": "Login",
@@ -46,7 +67,28 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}"
             }
-          }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Set-Cookie", "value": "token=<jwt>; Path=/; Max-Age=3600; HttpOnly; SameSite=None; Secure" }
+              ],
+              "body": "{\n  \"user\": {\n    \"id\": \"uuid\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  }\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/auth/login",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}"
+                }
+              }
+            }
+          ]
         },
         {
           "name": "Logout",
