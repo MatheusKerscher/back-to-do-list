@@ -106,13 +106,8 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/to-do/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "to-do",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["to-do", ":id"],
               "variable": [
                 {
                   "key": "id",
@@ -132,14 +127,8 @@
             "method": "PATCH",
             "url": {
               "raw": "{{baseUrl}}/to-do/:id/check",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "to-do",
-                ":id",
-                "check"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["to-do", ":id", "check"],
               "variable": [
                 {
                   "key": "id",
@@ -156,13 +145,8 @@
             "method": "DELETE",
             "url": {
               "raw": "{{baseUrl}}/to-do/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "to-do",
-                ":id"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["to-do", ":id"],
               "variable": [
                 {
                   "key": "id",
