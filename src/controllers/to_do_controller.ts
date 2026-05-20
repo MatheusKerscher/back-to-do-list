@@ -1,15 +1,21 @@
 import { Request, Response } from 'express'
 import { z } from 'zod'
+import { Todo } from '@prisma/client'
 import { prisma } from '../lib/prisma'
-import { ValidationError, NotFoundError } from '../errors'
+import { NotFoundError } from '../errors'
+import { parse_or_throw } from '../utils/validate'
 
-const create_schema = z.object({
-  text: z.string().min(1, 'Text is required.'),
+const todo_schema = z.object({
+  text: z.string().trim().min(1, 'Text is required.'),
 })
 
-const update_schema = z.object({
-  text: z.string().min(1, 'Text is required.'),
-})
+async function get_todo_or_throw(id: string, user_id: string): Promise<Todo> {
+  const todo = await prisma.todo.findUnique({ where: { id } })
+  if (!todo || todo.user_id !== user_id) {
+    throw new NotFoundError('Item not found.', 'Check the ID and try again.')
+  }
+  return todo
+}
 
 export async function list_todos(req: Request, res: Response): Promise<void> {
   const todos = await prisma.todo.findMany({
@@ -21,15 +27,7 @@ export async function list_todos(req: Request, res: Response): Promise<void> {
 }
 
 export async function create_todo(req: Request, res: Response): Promise<void> {
-  const parsed = create_schema.safeParse(req.body)
-
-  if (!parsed.success) {
-    throw new ValidationError(
-      'Invalid input data.',
-      'Fix the highlighted fields and try again.',
-      parsed.error.flatten().fieldErrors,
-    )
-  }
+  const { text } = parse_or_throw(todo_schema, req.body)
 
   const last_todo = await prisma.todo.findFirst({
     where: { user_id: req.user_id },
@@ -39,8 +37,8 @@ export async function create_todo(req: Request, res: Response): Promise<void> {
 
   const todo = await prisma.todo.create({
     data: {
-      text: parsed.data.text,
-      user_id: req.user_id!,
+      text,
+      user_id: req.user_id as string,
       order: (last_todo?.order ?? -1) + 1,
     },
   })
@@ -49,26 +47,13 @@ export async function create_todo(req: Request, res: Response): Promise<void> {
 }
 
 export async function update_todo(req: Request, res: Response): Promise<void> {
-  const parsed = update_schema.safeParse(req.body)
-
-  if (!parsed.success) {
-    throw new ValidationError(
-      'Invalid input data.',
-      'Fix the highlighted fields and try again.',
-      parsed.error.flatten().fieldErrors,
-    )
-  }
-
+  const { text } = parse_or_throw(todo_schema, req.body)
   const id = req.params.id as string
-  const todo = await prisma.todo.findUnique({ where: { id } })
-
-  if (!todo || todo.user_id !== req.user_id) {
-    throw new NotFoundError('Item not found.', 'Check the ID and try again.')
-  }
+  await get_todo_or_throw(id, req.user_id as string)
 
   const updated = await prisma.todo.update({
     where: { id },
-    data: { text: parsed.data.text },
+    data: { text },
   })
 
   res.json({ todo: updated })
@@ -76,11 +61,7 @@ export async function update_todo(req: Request, res: Response): Promise<void> {
 
 export async function check_todo(req: Request, res: Response): Promise<void> {
   const id = req.params.id as string
-  const todo = await prisma.todo.findUnique({ where: { id } })
-
-  if (!todo || todo.user_id !== req.user_id) {
-    throw new NotFoundError('Item not found.', 'Check the ID and try again.')
-  }
+  const todo = await get_todo_or_throw(id, req.user_id as string)
 
   const updated = await prisma.todo.update({
     where: { id },
@@ -92,11 +73,7 @@ export async function check_todo(req: Request, res: Response): Promise<void> {
 
 export async function delete_todo(req: Request, res: Response): Promise<void> {
   const id = req.params.id as string
-  const todo = await prisma.todo.findUnique({ where: { id } })
-
-  if (!todo || todo.user_id !== req.user_id) {
-    throw new NotFoundError('Item not found.', 'Check the ID and try again.')
-  }
+  await get_todo_or_throw(id, req.user_id as string)
 
   await prisma.todo.delete({ where: { id } })
 

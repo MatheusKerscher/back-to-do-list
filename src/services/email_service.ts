@@ -5,12 +5,14 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 interface ContactEmailParams {
   from_name: string
   from_email: string
+  phone: string
   message: string
 }
 
 export async function send_contact_email({
   from_name,
   from_email,
+  phone,
   message,
 }: ContactEmailParams): Promise<void> {
   const { error } = await resend.emails.send({
@@ -21,6 +23,7 @@ export async function send_contact_email({
       <h2>We received your message</h2>
       <p><strong>Name:</strong> ${from_name}</p>
       <p><strong>Email:</strong> ${from_email}</p>
+      <p><strong>Phone:</strong> ${phone}</p>
       <p><strong>Message:</strong></p>
       <p>${message}</p>
     `,

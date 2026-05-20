@@ -2,36 +2,39 @@ import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { z } from 'zod'
+import { CookieOptions } from 'express'
 import { prisma } from '../lib/prisma'
-import { ValidationError, ConflictError, UnauthorizedError } from '../errors'
+import { ConflictError, UnauthorizedError } from '../errors'
+import { parse_or_throw } from '../utils/validate'
 
 const PEPPER = process.env.PASSWORD_PEPPER ?? ''
 const JWT_SECRET = process.env.JWT_SECRET!
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000
 
+const COOKIE_OPTIONS: CookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: COOKIE_MAX_AGE,
+}
+
+function set_auth_cookie(res: Response, token: string): void {
+  res.cookie('token', token, COOKIE_OPTIONS)
+}
+
 const register_schema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
-  email: z.email('Invalid email address.'),
+  name: z.string().trim().min(2, 'Name must be at least 2 characters.'),
+  email: z.string().trim().email('Invalid email address.'),
   password: z.string().min(6, 'Password must be at least 6 characters.'),
 })
 
 const login_schema = z.object({
-  email: z.email('Invalid email address.'),
-  password: z.string().min(1, 'Password is required.'),
+  email: z.string().trim().email('Invalid email address.'),
+  password: z.string().min(6, 'Password must be at least 6 characters.'),
 })
 
 export async function register(req: Request, res: Response): Promise<void> {
-  const parsed = register_schema.safeParse(req.body)
-
-  if (!parsed.success) {
-    throw new ValidationError(
-      'Invalid input data.',
-      'Fix the highlighted fields and try again.',
-      parsed.error.flatten().fieldErrors,
-    )
-  }
-
-  const { name, email, password } = parsed.data
+  const { name, email, password } = parse_or_throw(register_schema, req.body)
 
   const existing_user = await prisma.user.findUnique({ where: { email } })
 
@@ -46,21 +49,14 @@ export async function register(req: Request, res: Response): Promise<void> {
     select: { id: true, name: true, email: true, created_at: true },
   })
 
+  const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '7d' })
+  set_auth_cookie(res, token)
+
   res.status(201).json({ user })
 }
 
 export async function login(req: Request, res: Response): Promise<void> {
-  const parsed = login_schema.safeParse(req.body)
-
-  if (!parsed.success) {
-    throw new ValidationError(
-      'Invalid input data.',
-      'Fix the highlighted fields and try again.',
-      parsed.error.flatten().fieldErrors,
-    )
-  }
-
-  const { email, password } = parsed.data
+  const { email, password } = parse_or_throw(login_schema, req.body)
 
   const user = await prisma.user.findUnique({ where: { email } })
 
@@ -69,23 +65,13 @@ export async function login(req: Request, res: Response): Promise<void> {
   }
 
   const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '7d' })
-
-  res.cookie('token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: COOKIE_MAX_AGE,
-  })
+  set_auth_cookie(res, token)
 
   res.json({ user: { id: user.id, name: user.name, email: user.email } })
 }
 
 export function logout(_req: Request, res: Response): void {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  })
+  res.clearCookie('token', COOKIE_OPTIONS)
   res.json({ message: 'Logged out successfully.' })
 }
 

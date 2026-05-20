@@ -135,7 +135,7 @@ export const openapi_spec = {
                 required: ['email', 'password'],
                 properties: {
                   email: { type: 'string', format: 'email', example: 'john@example.com' },
-                  password: { type: 'string', example: 'password123' },
+                  password: { type: 'string', minLength: 6, example: 'password123' },
                 },
               },
             },
@@ -437,10 +437,11 @@ export const openapi_spec = {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['name', 'email', 'message'],
+                required: ['name', 'email', 'phone', 'message'],
                 properties: {
                   name: { type: 'string', minLength: 2, example: 'Jane Doe' },
                   email: { type: 'string', format: 'email', example: 'jane@example.com' },
+                  phone: { type: 'string', minLength: 10, example: '(11) 91234-5678' },
                   message: {
                     type: 'string',
                     minLength: 10,
