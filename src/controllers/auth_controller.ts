@@ -51,7 +51,7 @@ export async function register(req: Request, res: Response): Promise<void> {
   const hashed_password = await bcrypt.hash(PEPPER + password, 10)
 
   const user = await prisma.user.create({
-    data: { name, email, password: hashed_password },
+    data: { name, email, password_hash: hashed_password },
     select: { id: true, name: true, email: true, created_at: true },
   })
 
@@ -66,7 +66,7 @@ export async function login(req: Request, res: Response): Promise<void> {
 
   const user = await prisma.user.findUnique({ where: { email } })
 
-  if (!user || !(await bcrypt.compare(PEPPER + password, user.password))) {
+  if (!user || !(await bcrypt.compare(PEPPER + password, user.password_hash))) {
     throw new UnauthorizedError('Invalid credentials.', 'Check your email and password.')
   }
 

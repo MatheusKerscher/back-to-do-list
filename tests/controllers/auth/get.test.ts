@@ -27,7 +27,7 @@ describe('GET /auth/me', () => {
 
       expect(res.status).toBe(200)
       expect(res.body.user).toMatchObject({ email: 'user@test.com', name: 'Test User' })
-      expect(res.body.user).not.toHaveProperty('password')
+      expect(res.body.user).not.toHaveProperty('password_hash')
     })
   })
 })

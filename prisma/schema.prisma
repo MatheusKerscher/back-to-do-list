@@ -8,13 +8,13 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  name       String
-  email      String   @unique
-  password   String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  todos      Todo[]
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  password_hash String   @db.VarChar(70)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  todos         Todo[]
 
   @@map("user")
 }

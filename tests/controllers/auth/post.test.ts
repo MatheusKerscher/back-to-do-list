@@ -12,7 +12,7 @@ describe('POST /auth/register', () => {
 
       expect(res.status).toBe(201)
       expect(res.body.user).toMatchObject({ name: 'John Doe', email: 'john@example.com' })
-      expect(res.body.user).not.toHaveProperty('password')
+      expect(res.body.user).not.toHaveProperty('password_hash')
       expect(res.headers['set-cookie']).toBeDefined()
     })
 
