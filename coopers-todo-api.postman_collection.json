@@ -1,23 +1,27 @@
 {
   "info": {
     "name": "Coopers To-Do List API",
+    "description": "# Coopers To-Do List API\n\nRESTful API for managing personal to-do lists. Supports user registration and login via **JWT stored in an HttpOnly cookie**, full CRUD on to-do items, and a public contact form.\n\n## Base URL\n`http://localhost:3334` (development). Update the `baseUrl` collection variable for other environments.\n\n## Authentication\nProtected routes read the `token` cookie set automatically on login/register. Enable **\"Send cookies\"** in Postman settings. No manual `Authorization` header is required.\n\n## Error shape\nAll error responses share this consistent structure:\n```json\n{\n  \"name\": \"ErrorClassName\",\n  \"action\": \"User-friendly suggestion.\",\n  \"message\": \"Error description.\",\n  \"status_code\": 400,\n  \"fields\": { \"fieldName\": [\"validation message\"] }\n}\n```\n> `fields` is only present on `ValidationError` (HTTP 400).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3333",
-      "type": "string"
+      "value": "http://localhost:3334",
+      "type": "string",
+      "description": "Base URL of the API server. Change to your staging or production URL as needed."
     }
   ],
   "item": [
     {
       "name": "Auth",
+      "description": "Endpoints for user account lifecycle and session management.\n\nAuthentication is cookie-based: a `token` HttpOnly cookie is set on register/login and cleared on logout. All endpoints in the **To-Do** folder require this cookie to be present and valid.",
       "item": [
         {
           "name": "Register",
           "request": {
             "method": "POST",
+            "description": "Creates a new user account and starts a session.\n\n**Auth required:** No\n\n**Password rules:** minimum 8 characters; must contain at least one lowercase letter, one uppercase letter, one digit, and one special character.\n\nOn success the server sets a `token` HttpOnly cookie (Max-Age 3600 s, SameSite=None, Secure in production) and returns the new user's `id` and `name`.",
             "url": "{{baseUrl}}/auth/register",
             "header": [
               {
@@ -27,7 +31,8 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}"
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
           },
           "response": [
@@ -35,18 +40,56 @@
               "name": "201 Created",
               "status": "Created",
               "code": 201,
+              "_postman_previewlanguage": "json",
               "header": [
                 { "key": "Content-Type", "value": "application/json" },
                 { "key": "Set-Cookie", "value": "token=<jwt>; Path=/; Max-Age=3600; HttpOnly; SameSite=None; Secure" }
               ],
-              "body": "{\n  \"user\": {\n    \"id\": \"uuid\",\n    \"name\": \"John Doe\"\n  }\n}",
+              "body": "{\n  \"user\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"name\": \"John Doe\"\n  }\n}",
               "originalRequest": {
                 "method": "POST",
                 "url": "{{baseUrl}}/auth/register",
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}"
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "400 Bad Request – Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"ValidationError\",\n  \"action\": \"Fix the highlighted fields and try again.\",\n  \"message\": \"Invalid input data.\",\n  \"status_code\": 400,\n  \"fields\": {\n    \"email\": [\"Must be a valid email address.\"],\n    \"password\": [\"Must be at least 8 characters.\", \"Must contain at least one uppercase letter.\"]\n  }\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/auth/register",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Jo\",\n  \"email\": \"not-an-email\",\n  \"password\": \"weak\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "409 Conflict – Email Already in Use",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"ConflictError\",\n  \"action\": \"Use a different email or sign in.\",\n  \"message\": \"Email already in use.\",\n  \"status_code\": 409\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/auth/register",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 }
               }
             }
@@ -56,6 +99,7 @@
           "name": "Login",
           "request": {
             "method": "POST",
+            "description": "Authenticates an existing user and starts a session.\n\n**Auth required:** No\n\nOn success the server sets a `token` HttpOnly cookie (Max-Age 3600 s) and returns the user's `id`, `name`, and `email`.",
             "url": "{{baseUrl}}/auth/login",
             "header": [
               {
@@ -65,7 +109,8 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}"
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
           },
           "response": [
@@ -73,18 +118,56 @@
               "name": "200 OK",
               "status": "OK",
               "code": 200,
+              "_postman_previewlanguage": "json",
               "header": [
                 { "key": "Content-Type", "value": "application/json" },
                 { "key": "Set-Cookie", "value": "token=<jwt>; Path=/; Max-Age=3600; HttpOnly; SameSite=None; Secure" }
               ],
-              "body": "{\n  \"user\": {\n    \"id\": \"uuid\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  }\n}",
+              "body": "{\n  \"user\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  }\n}",
               "originalRequest": {
                 "method": "POST",
                 "url": "{{baseUrl}}/auth/login",
                 "header": [{ "key": "Content-Type", "value": "application/json" }],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}"
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "400 Bad Request – Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"ValidationError\",\n  \"action\": \"Fix the highlighted fields and try again.\",\n  \"message\": \"Invalid input data.\",\n  \"status_code\": 400,\n  \"fields\": {\n    \"email\": [\"Must be a valid email address.\"]\n  }\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/auth/login",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"Password@123\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "401 Unauthorized – Invalid Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"UnauthorizedError\",\n  \"action\": \"Check your email and password.\",\n  \"message\": \"Invalid credentials.\",\n  \"status_code\": 401\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/auth/login",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"WrongPassword@1\"\n}",
+                  "options": { "raw": { "language": "json" } }
                 }
               }
             }
@@ -94,35 +177,137 @@
           "name": "Logout",
           "request": {
             "method": "POST",
+            "description": "Ends the current session by clearing the `token` cookie.\n\n**Auth required:** Yes (must have an active `token` cookie)\n\nThe response body confirms the logout; the server instructs the browser to delete the cookie.",
             "url": "{{baseUrl}}/auth/logout",
             "header": []
-          }
+          },
+          "response": [
+            {
+              "name": "200 OK – Logged Out",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Logged out successfully.\"\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/auth/logout",
+                "header": []
+              }
+            },
+            {
+              "name": "401 Unauthorized – Token Not Provided",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"UnauthorizedError\",\n  \"action\": \"Sign in to continue.\",\n  \"message\": \"Token not provided.\",\n  \"status_code\": 401\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/auth/logout",
+                "header": []
+              }
+            }
+          ]
         },
         {
           "name": "Me",
           "request": {
             "method": "GET",
+            "description": "Returns the profile of the currently authenticated user.\n\n**Auth required:** Yes (must have an active `token` cookie)\n\nReturns `id`, `name`, `email`, and `created_at`.",
             "url": "{{baseUrl}}/auth/me",
             "header": []
-          }
+          },
+          "response": [
+            {
+              "name": "200 OK – Current User",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"user\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"created_at\": \"2024-01-01T00:00:00.000Z\"\n  }\n}",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/auth/me",
+                "header": []
+              }
+            },
+            {
+              "name": "401 Unauthorized – Token Not Provided",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"UnauthorizedError\",\n  \"action\": \"Sign in to continue.\",\n  \"message\": \"Token not provided.\",\n  \"status_code\": 401\n}",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/auth/me",
+                "header": []
+              }
+            },
+            {
+              "name": "401 Unauthorized – Invalid or Expired Token",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"UnauthorizedError\",\n  \"action\": \"Sign in again.\",\n  \"message\": \"Invalid or expired token.\",\n  \"status_code\": 401\n}",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/auth/me",
+                "header": []
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "To-Do",
+      "description": "CRUD operations on the authenticated user's to-do list.\n\n**All endpoints require an active `token` cookie.** Make sure you are logged in before calling these routes.\n\nTodos are returned sorted by completion status (`done` ascending), then by `order` ascending, then by creation date ascending.",
       "item": [
         {
           "name": "List todos",
           "request": {
             "method": "GET",
+            "description": "Returns all to-do items belonging to the authenticated user.\n\n**Auth required:** Yes\n\nItems are sorted: incomplete items first (`done: false`), then by `order` ascending, then by `created_at` ascending.",
             "url": "{{baseUrl}}/to-do",
             "header": []
-          }
+          },
+          "response": [
+            {
+              "name": "200 OK – Todo List",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"todos\": [\n    { \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\", \"text\": \"Buy groceries\", \"done\": false, \"order\": 0 },\n    { \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\", \"text\": \"Read a book\", \"done\": false, \"order\": 1 },\n    { \"id\": \"c3d4e5f6-a7b8-9012-cdef-123456789012\", \"text\": \"Call dentist\", \"done\": true, \"order\": 2 }\n  ]\n}",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/to-do",
+                "header": []
+              }
+            },
+            {
+              "name": "401 Unauthorized – Token Not Provided",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"UnauthorizedError\",\n  \"action\": \"Sign in to continue.\",\n  \"message\": \"Token not provided.\",\n  \"status_code\": 401\n}",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/to-do",
+                "header": []
+              }
+            }
+          ]
         },
         {
           "name": "Create todo",
           "request": {
             "method": "POST",
+            "description": "Creates a new to-do item for the authenticated user.\n\n**Auth required:** Yes\n\nThe `text` field is trimmed before storage; a blank or whitespace-only string is rejected with a 400 error.",
             "url": "{{baseUrl}}/to-do",
             "header": [
               {
@@ -132,14 +317,72 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"text\": \"Buy groceries\"\n}"
+              "raw": "{\n  \"text\": \"Buy groceries\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
-          }
+          },
+          "response": [
+            {
+              "name": "201 Created – Todo Created",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"todo\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"text\": \"Buy groceries\",\n    \"done\": false,\n    \"order\": 0\n  }\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/to-do",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"Buy groceries\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "400 Bad Request – Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"ValidationError\",\n  \"action\": \"Fix the highlighted fields and try again.\",\n  \"message\": \"Invalid input data.\",\n  \"status_code\": 400,\n  \"fields\": {\n    \"text\": [\"Must be at least 1 character.\"]\n  }\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/to-do",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "401 Unauthorized – Token Not Provided",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"UnauthorizedError\",\n  \"action\": \"Sign in to continue.\",\n  \"message\": \"Token not provided.\",\n  \"status_code\": 401\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/to-do",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"Buy groceries\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            }
+          ]
         },
         {
           "name": "Update todo",
           "request": {
             "method": "PUT",
+            "description": "Replaces the `text` of an existing to-do item.\n\n**Auth required:** Yes\n\nSupply the todo's UUID as the `:id` path variable. Only items owned by the authenticated user can be updated.",
             "header": [
               {
                 "key": "Content-Type",
@@ -153,20 +396,117 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "PASTE_TODO_ID_HERE"
+                  "value": "PASTE_TODO_ID_HERE",
+                  "description": "UUID of the to-do item to update."
                 }
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"text\": \"Buy groceries and cook dinner\"\n}"
+              "raw": "{\n  \"text\": \"Buy groceries and cook dinner\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
-          }
+          },
+          "response": [
+            {
+              "name": "200 OK – Todo Updated",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"todo\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"text\": \"Buy groceries and cook dinner\",\n    \"done\": false,\n    \"order\": 0\n  }\n}",
+              "originalRequest": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id"],
+                  "variable": [{ "key": "id", "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }]
+                },
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"Buy groceries and cook dinner\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "400 Bad Request – Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"ValidationError\",\n  \"action\": \"Fix the highlighted fields and try again.\",\n  \"message\": \"Invalid input data.\",\n  \"status_code\": 400,\n  \"fields\": {\n    \"text\": [\"Must be at least 1 character.\"]\n  }\n}",
+              "originalRequest": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id"],
+                  "variable": [{ "key": "id", "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }]
+                },
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "401 Unauthorized – Token Not Provided",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"UnauthorizedError\",\n  \"action\": \"Sign in to continue.\",\n  \"message\": \"Token not provided.\",\n  \"status_code\": 401\n}",
+              "originalRequest": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id"],
+                  "variable": [{ "key": "id", "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }]
+                },
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"Buy groceries and cook dinner\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "404 Not Found – Item Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"NotFoundError\",\n  \"action\": \"Check the ID and try again.\",\n  \"message\": \"Item not found.\",\n  \"status_code\": 404\n}",
+              "originalRequest": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id"],
+                  "variable": [{ "key": "id", "value": "00000000-0000-0000-0000-000000000000" }]
+                },
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"This ID does not exist\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            }
+          ]
         },
         {
           "name": "Check / Uncheck todo",
           "request": {
             "method": "PATCH",
+            "description": "Toggles the `done` status of a to-do item (`false` → `true` or `true` → `false`).\n\n**Auth required:** Yes\n\nNo request body is needed. Supply the todo's UUID as the `:id` path variable.",
             "url": {
               "raw": "{{baseUrl}}/to-do/:id/check",
               "host": ["{{baseUrl}}"],
@@ -174,17 +514,75 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "PASTE_TODO_ID_HERE"
+                  "value": "PASTE_TODO_ID_HERE",
+                  "description": "UUID of the to-do item to toggle."
                 }
               ]
             },
             "header": []
-          }
+          },
+          "response": [
+            {
+              "name": "200 OK – Todo Checked",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"todo\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"text\": \"Buy groceries\",\n    \"done\": true,\n    \"order\": 0\n  }\n}",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id/check",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id", "check"],
+                  "variable": [{ "key": "id", "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }]
+                },
+                "header": []
+              }
+            },
+            {
+              "name": "401 Unauthorized – Token Not Provided",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"UnauthorizedError\",\n  \"action\": \"Sign in to continue.\",\n  \"message\": \"Token not provided.\",\n  \"status_code\": 401\n}",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id/check",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id", "check"],
+                  "variable": [{ "key": "id", "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }]
+                },
+                "header": []
+              }
+            },
+            {
+              "name": "404 Not Found – Item Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"NotFoundError\",\n  \"action\": \"Check the ID and try again.\",\n  \"message\": \"Item not found.\",\n  \"status_code\": 404\n}",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id/check",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id", "check"],
+                  "variable": [{ "key": "id", "value": "00000000-0000-0000-0000-000000000000" }]
+                },
+                "header": []
+              }
+            }
+          ]
         },
         {
           "name": "Delete todo",
           "request": {
             "method": "DELETE",
+            "description": "Permanently deletes a to-do item.\n\n**Auth required:** Yes\n\nReturns HTTP 204 with no response body on success. Supply the todo's UUID as the `:id` path variable.",
             "url": {
               "raw": "{{baseUrl}}/to-do/:id",
               "host": ["{{baseUrl}}"],
@@ -192,22 +590,81 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "PASTE_TODO_ID_HERE"
+                  "value": "PASTE_TODO_ID_HERE",
+                  "description": "UUID of the to-do item to delete."
                 }
               ]
             },
             "header": []
-          }
+          },
+          "response": [
+            {
+              "name": "204 No Content – Todo Deleted",
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": "",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id"],
+                  "variable": [{ "key": "id", "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }]
+                },
+                "header": []
+              }
+            },
+            {
+              "name": "401 Unauthorized – Token Not Provided",
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"UnauthorizedError\",\n  \"action\": \"Sign in to continue.\",\n  \"message\": \"Token not provided.\",\n  \"status_code\": 401\n}",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id"],
+                  "variable": [{ "key": "id", "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }]
+                },
+                "header": []
+              }
+            },
+            {
+              "name": "404 Not Found – Item Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"NotFoundError\",\n  \"action\": \"Check the ID and try again.\",\n  \"message\": \"Item not found.\",\n  \"status_code\": 404\n}",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/to-do/:id",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["to-do", ":id"],
+                  "variable": [{ "key": "id", "value": "00000000-0000-0000-0000-000000000000" }]
+                },
+                "header": []
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "Contact",
+      "description": "Public endpoint for sending a contact message. No authentication is required.",
       "item": [
         {
           "name": "Send message",
           "request": {
             "method": "POST",
+            "description": "Sends a contact message to the team. No authentication required.\n\n**Phone** must contain at least 10 digits (formatting characters such as spaces, dashes, and parentheses are accepted).\n\n**Message** must be at least 10 characters.",
             "url": "{{baseUrl}}/contact",
             "header": [
               {
@@ -217,9 +674,48 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"(11) 91234-5678\",\n  \"message\": \"Hello! I would like to get in touch with your team.\"\n}"
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"(11) 91234-5678\",\n  \"message\": \"Hello! I would like to get in touch with your team.\"\n}",
+              "options": { "raw": { "language": "json" } }
             }
-          }
+          },
+          "response": [
+            {
+              "name": "200 OK – Message Sent",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Message sent successfully.\"\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/contact",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"(11) 91234-5678\",\n  \"message\": \"Hello! I would like to get in touch with your team.\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            },
+            {
+              "name": "400 Bad Request – Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"name\": \"ValidationError\",\n  \"action\": \"Fix the highlighted fields and try again.\",\n  \"message\": \"Invalid input data.\",\n  \"status_code\": 400,\n  \"fields\": {\n    \"name\": [\"Must be at least 2 characters.\"],\n    \"email\": [\"Must be a valid email address.\"],\n    \"phone\": [\"Must contain at least 10 digits.\"],\n    \"message\": [\"Must be at least 10 characters.\"]\n  }\n}",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/contact",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"J\",\n  \"email\": \"not-an-email\",\n  \"phone\": \"123\",\n  \"message\": \"Hi\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                }
+              }
+            }
+          ]
         }
       ]
     }

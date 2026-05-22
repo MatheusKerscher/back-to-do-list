@@ -6,6 +6,7 @@ import { CookieOptions } from 'express'
 import { prisma } from '../lib/prisma'
 import { ConflictError, UnauthorizedError } from '../errors'
 import { parse_or_throw } from '../utils/validate'
+import { notify_auth } from '../services/discord_service'
 
 const PEPPER = process.env.PASSWORD_PEPPER ?? ''
 const JWT_SECRET = process.env.JWT_SECRET!
@@ -43,38 +44,48 @@ const login_schema = z.object({
 export async function register(req: Request, res: Response): Promise<void> {
   const { name, email, password } = parse_or_throw(register_schema, req.body)
 
-  const existing_user = await prisma.user.findUnique({ where: { email } })
+  try {
+    const existing_user = await prisma.user.findUnique({ where: { email } })
 
-  if (existing_user) {
-    throw new ConflictError('Email already in use.', 'Use a different email or sign in.')
+    if (existing_user) {
+      throw new ConflictError('Email already in use.', 'Use a different email or sign in.')
+    }
+
+    const hashed_password = await bcrypt.hash(PEPPER + password, 10)
+
+    const user = await prisma.user.create({
+      data: { name, email, password_hash: hashed_password },
+      select: { id: true, name: true },
+    })
+
+    const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '1h' })
+    set_auth_cookie(res, token)
+    notify_auth('register', email)
+    res.status(201).json({ user: { id: user.id, name: user.name } })
+  } catch (err) {
+    if (err instanceof ConflictError) notify_auth('register_conflict', email, err.message)
+    throw err
   }
-
-  const hashed_password = await bcrypt.hash(PEPPER + password, 10)
-
-  const user = await prisma.user.create({
-    data: { name, email, password_hash: hashed_password },
-    select: { id: true, name: true },
-  })
-
-  const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '1h' })
-  set_auth_cookie(res, token)
-
-  res.status(201).json({ user: { id: user.id, name: user.name } })
 }
 
 export async function login(req: Request, res: Response): Promise<void> {
   const { email, password } = parse_or_throw(login_schema, req.body)
 
-  const user = await prisma.user.findUnique({ where: { email } })
+  try {
+    const user = await prisma.user.findUnique({ where: { email } })
 
-  if (!user || !(await bcrypt.compare(PEPPER + password, user.password_hash))) {
-    throw new UnauthorizedError('Invalid credentials.', 'Check your email and password.')
+    if (!user || !(await bcrypt.compare(PEPPER + password, user.password_hash))) {
+      throw new UnauthorizedError('Invalid credentials.', 'Check your email and password.')
+    }
+
+    const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '1h' })
+    set_auth_cookie(res, token)
+    notify_auth('login', email)
+    res.json({ user: { id: user.id, name: user.name, email: user.email } })
+  } catch (err) {
+    if (err instanceof UnauthorizedError) notify_auth('login_failed', email, err.message)
+    throw err
   }
-
-  const token = jwt.sign({ user_id: user.id }, JWT_SECRET, { expiresIn: '1h' })
-  set_auth_cookie(res, token)
-
-  res.json({ user: { id: user.id, name: user.name, email: user.email } })
 }
 
 export function logout(_req: Request, res: Response): void {

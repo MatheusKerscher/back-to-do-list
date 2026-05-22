@@ -1,8 +1,18 @@
 import request from 'supertest'
 import setCookieParser from 'set-cookie-parser'
 import { app } from '../../../src/app'
+import { notify_auth } from '../../../src/services/discord_service'
+
+jest.mock('../../../src/services/discord_service', () => ({
+  notify_auth: jest.fn(),
+  notify_alert: jest.fn(),
+  notify_error: jest.fn(),
+}))
+jest.mock('axios', () => ({ post: jest.fn() }))
 
 describe('POST /auth/register', () => {
+  beforeEach(() => jest.clearAllMocks())
+
   describe('anonymous user', () => {
     it('returns 201 and creates user with valid data', async () => {
       const res = await request(app).post('/auth/register').send({
@@ -21,6 +31,7 @@ describe('POST /auth/register', () => {
       expect(parsedSetCookie.token.path).toBe('/')
       expect(parsedSetCookie.token.maxAge).toBe(3600)
       expect(parsedSetCookie.token.sameSite).toBe('Lax')
+      expect(notify_auth).toHaveBeenCalledWith('register', 'john@example.com')
     })
 
     it('returns 400 when name is too short', async () => {
@@ -122,12 +133,14 @@ describe('POST /auth/register', () => {
 
       expect(res.status).toBe(409)
       expect(res.body.name).toBe('ConflictError')
+      expect(notify_auth).toHaveBeenCalledWith('register_conflict', 'john@example.com', expect.any(String))
     })
   })
 })
 
 describe('POST /auth/login', () => {
   beforeEach(async () => {
+    jest.clearAllMocks()
     await request(app).post('/auth/register').send({
       name: 'John Doe',
       email: 'john@example.com',
@@ -149,6 +162,7 @@ describe('POST /auth/login', () => {
       expect(parsedSetCookie.token.path).toBe('/')
       expect(parsedSetCookie.token.maxAge).toBe(3600)
       expect(parsedSetCookie.token.sameSite).toBe('Lax')
+      expect(notify_auth).toHaveBeenCalledWith('login', 'john@example.com')
     })
 
     it('returns 401 with wrong password', async () => {
@@ -158,6 +172,7 @@ describe('POST /auth/login', () => {
 
       expect(res.status).toBe(401)
       expect(res.body.name).toBe('UnauthorizedError')
+      expect(notify_auth).toHaveBeenCalledWith('login_failed', 'john@example.com', expect.any(String))
     })
 
     it('returns 401 with non-existent email', async () => {
@@ -167,6 +182,7 @@ describe('POST /auth/login', () => {
 
       expect(res.status).toBe(401)
       expect(res.body.name).toBe('UnauthorizedError')
+      expect(notify_auth).toHaveBeenCalledWith('login_failed', 'nobody@example.com', expect.any(String))
     })
 
     it('returns 400 when email is invalid', async () => {

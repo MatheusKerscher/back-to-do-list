@@ -1,13 +1,15 @@
 import { Request, Response, NextFunction } from 'express'
 import { AppError, ValidationError } from '../errors'
+import { notify_alert, notify_error } from '../services/discord_service'
 
 export function error_handler(
   err: unknown,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
 ): void {
   if (err instanceof AppError) {
+    notify_alert(err, req)
     res.status(err.status_code).json({
       name: err.name,
       action: err.action,
@@ -19,6 +21,7 @@ export function error_handler(
   }
 
   console.error(err)
+  notify_error(err, req)
   res.status(500).json({
     name: 'InternalServerError',
     action: 'Try again later or contact support.',
