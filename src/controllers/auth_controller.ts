@@ -99,5 +99,7 @@ export async function me(req: Request, res: Response): Promise<void> {
     select: { id: true, name: true, email: true, created_at: true },
   })
 
-  res.json({ user: { id: user!.id, name: user!.name, email: user!.email, created_at: user!.created_at } })
+  res.json({
+    user: { id: user!.id, name: user!.name, email: user!.email, created_at: user!.created_at },
+  })
 }

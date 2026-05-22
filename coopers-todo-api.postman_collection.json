@@ -43,7 +43,10 @@
               "_postman_previewlanguage": "json",
               "header": [
                 { "key": "Content-Type", "value": "application/json" },
-                { "key": "Set-Cookie", "value": "token=<jwt>; Path=/; Max-Age=3600; HttpOnly; SameSite=None; Secure" }
+                {
+                  "key": "Set-Cookie",
+                  "value": "token=<jwt>; Path=/; Max-Age=3600; HttpOnly; SameSite=None; Secure"
+                }
               ],
               "body": "{\n  \"user\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"name\": \"John Doe\"\n  }\n}",
               "originalRequest": {
@@ -121,7 +124,10 @@
               "_postman_previewlanguage": "json",
               "header": [
                 { "key": "Content-Type", "value": "application/json" },
-                { "key": "Set-Cookie", "value": "token=<jwt>; Path=/; Max-Age=3600; HttpOnly; SameSite=None; Secure" }
+                {
+                  "key": "Set-Cookie",
+                  "value": "token=<jwt>; Path=/; Max-Age=3600; HttpOnly; SameSite=None; Secure"
+                }
               ],
               "body": "{\n  \"user\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  }\n}",
               "originalRequest": {

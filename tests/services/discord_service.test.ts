@@ -14,7 +14,9 @@ const WEBHOOKS = {
 }
 
 type DiscordField = { name: string; value: string; inline?: boolean }
-type DiscordPayload = { embeds: Array<{ title: string; color: number; fields: DiscordField[]; timestamp: string }> }
+type DiscordPayload = {
+  embeds: Array<{ title: string; color: number; fields: DiscordField[]; timestamp: string }>
+}
 
 function make_request(method = 'GET', path = '/test'): Request {
   return { method, path } as unknown as Request
@@ -83,7 +85,9 @@ describe('discord_service', () => {
 
       const { embeds } = get_payload()
       expect(embeds[0].fields).toEqual(
-        expect.arrayContaining([expect.objectContaining({ name: 'Email', value: 'user@example.com' })]),
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Email', value: 'user@example.com' }),
+        ]),
       )
     })
 
@@ -92,7 +96,9 @@ describe('discord_service', () => {
 
       const { embeds } = get_payload()
       expect(embeds[0].fields).toEqual(
-        expect.arrayContaining([expect.objectContaining({ name: 'Reason', value: 'Invalid credentials.' })]),
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Reason', value: 'Invalid credentials.' }),
+        ]),
       )
     })
 

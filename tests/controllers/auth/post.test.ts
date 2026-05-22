@@ -133,7 +133,11 @@ describe('POST /auth/register', () => {
 
       expect(res.status).toBe(409)
       expect(res.body.name).toBe('ConflictError')
-      expect(notify_auth).toHaveBeenCalledWith('register_conflict', 'john@example.com', expect.any(String))
+      expect(notify_auth).toHaveBeenCalledWith(
+        'register_conflict',
+        'john@example.com',
+        expect.any(String),
+      )
     })
   })
 })
@@ -172,7 +176,11 @@ describe('POST /auth/login', () => {
 
       expect(res.status).toBe(401)
       expect(res.body.name).toBe('UnauthorizedError')
-      expect(notify_auth).toHaveBeenCalledWith('login_failed', 'john@example.com', expect.any(String))
+      expect(notify_auth).toHaveBeenCalledWith(
+        'login_failed',
+        'john@example.com',
+        expect.any(String),
+      )
     })
 
     it('returns 401 with non-existent email', async () => {
@@ -182,7 +190,11 @@ describe('POST /auth/login', () => {
 
       expect(res.status).toBe(401)
       expect(res.body.name).toBe('UnauthorizedError')
-      expect(notify_auth).toHaveBeenCalledWith('login_failed', 'nobody@example.com', expect.any(String))
+      expect(notify_auth).toHaveBeenCalledWith(
+        'login_failed',
+        'nobody@example.com',
+        expect.any(String),
+      )
     })
 
     it('returns 400 when email is invalid', async () => {

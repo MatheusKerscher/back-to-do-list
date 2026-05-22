@@ -17,7 +17,8 @@ export const openapi_spec = {
         type: 'apiKey',
         in: 'cookie',
         name: 'token',
-        description: 'JWT token set automatically after a successful login or register. Expires in 1 hour.',
+        description:
+          'JWT token set automatically after a successful login or register. Expires in 1 hour.',
       },
     },
     schemas: {

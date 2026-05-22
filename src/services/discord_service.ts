@@ -50,7 +50,12 @@ export function notify_auth(
     fields.push({ name: 'Reason', value: detail, inline: true })
   }
 
-  send(WEBHOOKS.auth, { title: config.title, color: config.color, fields, timestamp: new Date().toISOString() })
+  send(WEBHOOKS.auth, {
+    title: config.title,
+    color: config.color,
+    fields,
+    timestamp: new Date().toISOString(),
+  })
 }
 
 export function notify_alert(err: AppError, req: Request): void {
